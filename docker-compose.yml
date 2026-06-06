@@ -1,0 +1,97 @@
+# =====================================================================
+# Energy-Based OOD Fraud Detection — Full Stack Orchestration
+# =====================================================================
+# Services:
+#   - fraud-api:   FastAPI + PyTorch inference server
+#   - redis:       High-speed energy score cache
+#   - prometheus:  Metrics collection & alerting
+#   - grafana:     Live monitoring dashboards
+#
+# Usage:
+#   docker-compose up --build
+#   API:        http://localhost:8000
+#   Prometheus: http://localhost:9090
+#   Grafana:    http://localhost:3000 (admin/admin)
+# =====================================================================
+
+services:
+  # --- Fraud Detection API ---
+  fraud-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fraud-api
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_PATH=model_weights.pt
+      - INPUT_DIM=29
+      - NUM_CLASSES=2
+      - OOD_ENERGY_THRESHOLD=-5.0
+      - ENERGY_TEMPERATURE=1.0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_TTL=300
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - fraud-net
+    restart: unless-stopped
+
+  # --- Redis Cache ---
+  redis:
+    image: redis:7-alpine
+    container_name: fraud-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - fraud-net
+    restart: unless-stopped
+
+  # --- Prometheus ---
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: fraud-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=7d"
+    depends_on:
+      - fraud-api
+    networks:
+      - fraud-net
+    restart: unless-stopped
+
+  # --- Grafana ---
+  grafana:
+    image: grafana/grafana:latest
+    container_name: fraud-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/fraud-dashboard.json
+    volumes:
+      - ./monitoring/grafana-dashboard.json:/var/lib/grafana/dashboards/fraud-dashboard.json:ro
+      - ./monitoring/grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
+      - ./monitoring/grafana-dashboard-provider.yml:/etc/grafana/provisioning/dashboards/provider.yml:ro
+    depends_on:
+      - prometheus
+    networks:
+      - fraud-net
+    restart: unless-stopped
+
+networks:
+  fraud-net:
+    driver: bridge

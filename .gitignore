@@ -1,0 +1,23 @@
+# Caches and temporary files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Datasets
+data set/
+*.csv
+
+# Model weights / checkpoints (optional, but recommended to keep out of git if large)
+# model_weights.pt
+
+# OS files
+.DS_Store
+Thumbs.db

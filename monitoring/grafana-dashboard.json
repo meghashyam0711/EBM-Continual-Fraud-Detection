@@ -1,0 +1,242 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Energy-Based OOD Fraud Detection — Live Monitoring Dashboard",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "title": "⚡ Energy Score Running Average (Spike = Anomaly Warning)",
+      "description": "Exponential moving average of incoming transaction energy scores. A sudden upward spike indicates an OOD anomaly wave — potential black-swan fraud event.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 16, "x": 0, "y": 0 },
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "showPoints": "auto",
+            "pointSize": 5,
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": -5 },
+              { "color": "red", "value": -3 }
+            ]
+          },
+          "unit": "short",
+          "displayName": "Energy EMA"
+        }
+      },
+      "targets": [
+        {
+          "expr": "energy_score_running_avg",
+          "legendFormat": "Energy EMA",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "🚨 OOD Anomaly Warnings",
+      "description": "Cumulative count of Out-of-Distribution anomaly warnings triggered.",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 0 },
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 20 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "targets": [
+        {
+          "expr": "ood_anomaly_warnings_total",
+          "legendFormat": "OOD Warnings",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "📊 Total Predictions",
+      "description": "Total prediction count across all classes and OOD statuses.",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 0 },
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(fraud_predictions_total)",
+          "legendFormat": "Total",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Prediction Distribution (Legitimate vs Fraudulent)",
+      "description": "Breakdown of predictions by class and OOD status.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 4 },
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"]
+        },
+        "pieType": "donut",
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": ["value", "percent"]
+        }
+      },
+      "targets": [
+        {
+          "expr": "fraud_predictions_total",
+          "legendFormat": "{{prediction}} (OOD={{ood}})",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Energy Score Distribution (Histogram)",
+      "description": "Distribution of energy scores across all predictions. Left-shifted = in-distribution, right-shifted = OOD.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 16, "x": 0, "y": 8 },
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(energy_score_histogram_bucket[5m])",
+          "legendFormat": "{{le}}",
+          "refId": "A",
+          "format": "heatmap"
+        }
+      ]
+    },
+    {
+      "title": "Request Latency (P50, P95, P99)",
+      "description": "Inference request latency percentiles. Target: P99 < 100ms.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10
+          },
+          "unit": "s"
+        }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(request_latency_seconds_bucket[5m]))",
+          "legendFormat": "P50",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(request_latency_seconds_bucket[5m]))",
+          "legendFormat": "P95",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(request_latency_seconds_bucket[5m]))",
+          "legendFormat": "P99",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "title": "Prediction Rate (per second)",
+      "description": "Rate of incoming predictions per second, broken down by class.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "gradientMode": "scheme",
+            "stacking": { "mode": "normal" }
+          },
+          "unit": "reqps"
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(fraud_predictions_total[1m])",
+          "legendFormat": "{{prediction}} (OOD={{ood}})",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["fraud-detection", "energy-ood", "ml-monitoring"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Energy-Based OOD Fraud Detection",
+  "uid": "fraud-ood-dashboard",
+  "version": 1
+}

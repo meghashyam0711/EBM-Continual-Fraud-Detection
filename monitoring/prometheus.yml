@@ -1,0 +1,41 @@
+# =====================================================================
+# Prometheus Scrape Configuration
+# =====================================================================
+# Scrapes the FastAPI /metrics endpoint every 10 seconds for:
+#   - fraud_predictions_total (Counter)
+#   - energy_score_histogram (Histogram)
+#   - energy_score_running_avg (Gauge) — spike = anomaly wave
+#   - request_latency_seconds (Histogram)
+#   - ood_anomaly_warnings_total (Counter)
+# =====================================================================
+
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+rule_files:
+  - "alert_rules.yml"
+
+scrape_configs:
+  - job_name: "fraud-api"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["fraud-api:8000"]
+        labels:
+          service: "energy-ood-fraud-detection"
+          environment: "production"
+
+# =====================================================================
+# Alerting Rules (inline — also exported to alert_rules.yml)
+# =====================================================================
+# These rules trigger when the energy score running average spikes,
+# indicating a potential OOD anomaly wave hitting the system.
+#
+# Alert: EnergyScoreSpike
+#   Fires when the EMA of energy scores rises above -3.0 for 2 minutes,
+#   signaling that incoming traffic is shifting out-of-distribution.
+#
+# Alert: HighOODRate
+#   Fires when more than 10% of predictions in the last 5 minutes
+#   are flagged as OOD.
+# =====================================================================

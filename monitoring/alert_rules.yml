@@ -1,0 +1,59 @@
+# =====================================================================
+# Prometheus Alert Rules
+# =====================================================================
+# Anomaly detection alerts based on energy score metrics.
+# These rules run inside Prometheus and fire when conditions are met.
+# =====================================================================
+
+groups:
+  - name: fraud_detection_alerts
+    rules:
+      # Alert: Energy Score Spike
+      # The EMA of energy scores has risen above -3.0 for 2+ minutes.
+      # This means incoming traffic is shifting toward OOD territory.
+      - alert: EnergyScoreSpike
+        expr: energy_score_running_avg > -3.0
+        for: 2m
+        labels:
+          severity: critical
+          team: fraud-ops
+        annotations:
+          summary: "⚠ Energy Score Spike Detected — Possible OOD Anomaly Wave"
+          description: >
+            The exponential moving average of input energy scores has risen
+            above -3.0 (current: {{ $value | printf "%.2f" }}), indicating
+            that incoming transactions are shifting out-of-distribution.
+            This may signal a novel fraud pattern or black-swan event.
+            Investigate immediately.
+
+      # Alert: High OOD Rate
+      # More than 10% of predictions in the last 5 minutes are OOD.
+      - alert: HighOODRate
+        expr: >
+          rate(fraud_predictions_total{ood="true"}[5m])
+          / rate(fraud_predictions_total[5m]) > 0.10
+        for: 3m
+        labels:
+          severity: warning
+          team: fraud-ops
+        annotations:
+          summary: "⚠ High OOD Detection Rate — {{ $value | printf \"%.1f\" }}% of traffic flagged"
+          description: >
+            More than 10% of fraud predictions in the last 5 minutes have
+            been flagged as Out-of-Distribution. This could indicate a
+            coordinated attack or a distributional shift in transaction data.
+
+      # Alert: Privacy Budget Exhaustion Warning
+      # (Requires custom metric push from training pipeline — informational)
+      - alert: HighRequestLatency
+        expr: histogram_quantile(0.99, rate(request_latency_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Inference latency P99 above 500ms"
+          description: >
+            The 99th percentile inference latency has exceeded 500ms for
+            the past 5 minutes. Consider scaling up or investigating model
+            performance issues.
