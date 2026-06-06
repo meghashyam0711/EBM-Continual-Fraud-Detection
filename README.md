@@ -27,7 +27,7 @@ An unassailable, production-grade financial fraud detection framework combining 
 
 ---
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 - **Core ML**: PyTorch, Scikit-Learn, NumPy
 - **Differential Privacy**: Opacus
