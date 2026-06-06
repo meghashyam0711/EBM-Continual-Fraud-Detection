@@ -2,6 +2,8 @@
 
 An unassailable, production-grade financial fraud detection framework combining **Energy-Based Out-of-Distribution (OOD) Scoring**, **Differential Privacy (DP-SGD)**, **Continual Learning (EWC)**, and **Cryptographic Merkle-based Auditing**.
 
+🚀 **Live Frontend Demo**: [https://ebm-continual-fraud-detection.vercel.app/](https://ebm-continual-fraud-detection.vercel.app/)
+
 ---
 
 ## Key Features
@@ -89,8 +91,9 @@ If you have a Redis broker installed:
 
 ##  Verification & Auditing
 
-1. Open the dashboard in a browser: `http://localhost:8000`.
-2. Generate inferences using the presets or random feature vectors.
-3. Observe new batches listed in the **Immutable Audit Logs**.
-4. Select a batch to view its Merkle root and dynamic transaction list.
-5. Click **Verify Cryptographic Root** to assert the integrity of the record against the Merkle tree, or test tampering with **Verify Tampered Hash**.
+1. Open the dashboard in a browser: either locally at `http://localhost:8000` or via the live deployment at [https://ebm-continual-fraud-detection.vercel.app/](https://ebm-continual-fraud-detection.vercel.app/).
+2. If using the Vercel demo, you can test the entire dashboard's interactive features immediately in **Simulated Mode**, or configure your live backend API URL in the header status card to connect to your hosted API.
+3. Generate inferences using the presets or random feature vectors.
+4. Observe new batches listed in the **Immutable Audit Logs**.
+5. Select a batch to view its Merkle root and dynamic transaction list.
+6. Click **Verify Cryptographic Root** to assert the integrity of the record against the Merkle tree, or test tampering with **Verify Tampered Hash**.
