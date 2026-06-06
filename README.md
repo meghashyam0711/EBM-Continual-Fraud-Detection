@@ -4,7 +4,7 @@ An unassailable, production-grade financial fraud detection framework combining 
 
 ---
 
-## 🚀 Key Features
+##  Key Features
 
 1. **Energy-Based OOD Detection**
    - Combines traditional classification with OOD energy scoring to flag novel, unseen fraud patterns.
@@ -39,7 +39,7 @@ An unassailable, production-grade financial fraud detection framework combining 
 
 ---
 
-## 📁 Directory Structure
+## Directory Structure
 
 ```text
 ├── app.py             # FastAPI Inference & API Server
@@ -57,7 +57,7 @@ An unassailable, production-grade financial fraud detection framework combining 
 
 ---
 
-## ⚙️ Quick Start
+##  Quick Start
 
 ### 1. Installation
 Install the required dependencies:
@@ -87,7 +87,7 @@ If you have a Redis broker installed:
 
 ---
 
-## 🔒 Verification & Auditing
+##  Verification & Auditing
 
 1. Open the dashboard in a browser: `http://localhost:8000`.
 2. Generate inferences using the presets or random feature vectors.
