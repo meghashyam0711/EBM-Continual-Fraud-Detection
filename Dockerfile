@@ -52,9 +52,13 @@ WORKDIR /app
 COPY model.py .
 COPY pipeline.py .
 COPY app.py .
+COPY tasks.py .
+COPY credit.py .
+COPY static/ ./static/
 
-# Optional: copy pre-trained model weights if available
-# COPY model_weights.pt .
+# Copy pre-trained model weights and scalers if they exist
+COPY model_weights.pt* .
+COPY scaler.joblib* .
 
 # Set ownership to non-root user
 RUN chown -R appuser:appuser /app
