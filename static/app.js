@@ -56,7 +56,7 @@ function getApiUrl(path) {
 function saveBackendUrl(val) {
     if (val && val.trim()) {
         let cleaned = val.trim();
-        if (!/^https?:\/\
+        if (!cleaned.toLowerCase().startsWith("http://") && !cleaned.toLowerCase().startsWith("https://")) {
             cleaned = "http://" + cleaned;
         }
         localStorage.setItem("backend_url", cleaned);
