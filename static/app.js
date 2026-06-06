@@ -32,15 +32,40 @@ const PRESETS = {
 
 
 document.addEventListener("DOMContentLoaded", () => {
+    const storedUrl = localStorage.getItem("backend_url") || "";
+    const input = document.getElementById("input-backend-url");
+    if (input) input.value = storedUrl;
+
     generateSliders();
     loadPreset('normal');
     fetchSystemStatus();
     loadAuditLogs();
     checkTrainingStatus();
     
-    
     setInterval(fetchSystemStatus, 5000);
 });
+
+function getApiUrl(path) {
+    const customUrl = localStorage.getItem("backend_url");
+    if (customUrl) {
+        return customUrl.replace(/\/$/, "") + path;
+    }
+    return path;
+}
+
+function saveBackendUrl(val) {
+    if (val && val.trim()) {
+        let cleaned = val.trim();
+        if (!/^https?:\/\
+            cleaned = "http://" + cleaned;
+        }
+        localStorage.setItem("backend_url", cleaned);
+    } else {
+        localStorage.removeItem("backend_url");
+    }
+    fetchSystemStatus();
+    loadAuditLogs();
+}
 
 
 function generateSliders() {
@@ -118,7 +143,7 @@ function randomizeFeatures() {
 
 async function fetchSystemStatus() {
     try {
-        const response = await fetch("/ready");
+        const response = await fetch(getApiUrl("/ready"));
         const data = await response.json();
         
         
@@ -149,7 +174,7 @@ async function runDetection() {
     btn.innerText = "Running Engine...";
     
     try {
-        const response = await fetch("/api/v1/predict", {
+        const response = await fetch(getApiUrl("/api/v1/predict"), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -217,7 +242,7 @@ async function runDetection() {
 
 async function loadAuditLogs() {
     try {
-        const response = await fetch("/api/v1/audit-logs");
+        const response = await fetch(getApiUrl("/api/v1/audit-logs"));
         const data = await response.json();
         auditLogs = data;
         
@@ -270,7 +295,7 @@ async function fetchAuditProof() {
     area.innerHTML = `<div class="empty-state">Loading cryptographic audit proof...</div>`;
     
     try {
-        const response = await fetch("/api/v1/audit-proof", {
+        const response = await fetch(getApiUrl("/api/v1/audit-proof"), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -350,7 +375,7 @@ async function verifyAuditProof(tamperedHash = null) {
     const hashToVerify = tamperedHash || currentProofData.leaf_hash;
     
     try {
-        const response = await fetch("/api/v1/verify-proof", {
+        const response = await fetch(getApiUrl("/api/v1/verify-proof"), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -389,7 +414,7 @@ async function triggerTraining() {
     btn.disabled = true;
     
     try {
-        const response = await fetch("/api/v1/train", { method: "POST" });
+        const response = await fetch(getApiUrl("/api/v1/train"), { method: "POST" });
         const data = await response.json();
         
         document.getElementById("training-progress-area").classList.remove("hidden");
@@ -406,7 +431,7 @@ function pollTrainingStatus() {
     
     trainingPollInterval = setInterval(async () => {
         try {
-            const response = await fetch("/api/v1/train/status");
+            const response = await fetch(getApiUrl("/api/v1/train/status"));
             const data = await response.json();
             
             updateTrainingUI(data);
@@ -431,7 +456,7 @@ function pollTrainingStatus() {
 
 function checkTrainingStatus() {
     
-    fetch("/api/v1/train/status")
+    fetch(getApiUrl("/api/v1/train/status"))
         .then(res => res.json())
         .then(data => {
             if (data.status === "running") {

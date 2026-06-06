@@ -39,6 +39,12 @@
                     <span class="status-dot red"></span>
                     <span class="status-label">Cache: <strong id="val-redis-status">OFFLINE</strong></span>
                 </div>
+                <div class="status-card" style="flex-direction: column; align-items: flex-start; gap: 4px; padding: 6px 12px; min-width: 180px;">
+                    <span class="status-label" style="font-size: 10px; opacity: 0.7; font-weight: 600;">BACKEND API URL:</span>
+                    <input type="text" id="input-backend-url" placeholder="Local Server" 
+                           style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; color: #fff; padding: 2px 6px; font-family: inherit; font-size: 11px; outline: none; width: 100%; box-sizing: border-box;"
+                           onchange="saveBackendUrl(this.value)">
+                </div>
             </div>
         </header>
 
